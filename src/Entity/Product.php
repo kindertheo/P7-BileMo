@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\ProductRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=ProductRepository::class)
@@ -19,16 +20,32 @@ class Product
 
     /**
      * @ORM\Column(type="string", length=100)
+     * @Assert\NotBlank
+     * @Assert\Length(
+     *     min = 4,
+     *     max = 255,
+     *     minMessage = "Le nom du produit est trop court.",
+     *     maxMessage = "Le nom du produit est trop long."
+     * )
      */
     private $name;
 
     /**
      * @ORM\Column(type="integer")
+     * @Assert\NotBlank
+     * @Assert\Positive
      */
     private $price;
 
     /**
      * @ORM\Column(type="text")
+     * @Assert\NotBlank
+     * @Assert\Length(
+     *     min = 4,
+     *     max = 255,
+     *     minMessage = "La description est trop courte.",
+     *     maxMessage = "La description est trop longue."
+     * )
      */
     private $description;
 
