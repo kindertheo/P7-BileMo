@@ -63,6 +63,7 @@ class User implements UserInterface
      */
     private $role;
 
+
     /**
      * @ORM\ManyToOne(targetEntity=Client::class, inversedBy="user")
      * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
@@ -141,6 +142,33 @@ class User implements UserInterface
     }
 
     /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUsername(): string
+    {
+        return (string) $this->email;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getSalt()
+    {
+        // not needed when using the "bcrypt" algorithm in security.yaml
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials()
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
+    }
+
+    /**
      * Returns the roles granted to the user.
      *
      *     public function getRoles()
@@ -157,36 +185,5 @@ class User implements UserInterface
     public function getRoles()
     {
         return ['ROLE_USER'];
-    }
-
-    /**
-     * Returns the salt that was originally used to encode the password.
-     *
-     * This can return null if the password was not encoded using a salt.
-     *
-     * @return string|null The salt
-     */
-    public function getSalt()
-    {
-    }
-
-    /**
-     * Returns the username used to authenticate the user.
-     *
-     * @return string The username
-     */
-    public function getUsername()
-    {
-        return $this->email;
-    }
-
-    /**
-     * Removes sensitive data from the user.
-     *
-     * This is important if, at any given point, sensitive information like
-     * the plain-text password is stored on this object.
-     */
-    public function eraseCredentials()
-    {
     }
 }
