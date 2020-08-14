@@ -8,9 +8,18 @@ use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Persistence\ObjectManager;
 use Faker\Factory;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class AppFixtures extends Fixture
 {
+    private $encoder;
+
+    public function __construct(UserPasswordEncoderInterface $encoder)
+    {
+        $this->encoder = $encoder;
+    }
+
     public function load(ObjectManager $manager)
     {
         $faker = Factory::create();
@@ -35,13 +44,15 @@ class AppFixtures extends Fixture
         $clients[] = $client;
         }
 
+
         for($i = 0; $i < 20; $i++){
             $user = new User();
+
 
             $user->setName($faker->name)
                 ->setEmail($faker->email)
                 ->setRole("user")
-                ->setPassword($faker->password)
+                ->setPassword($this->encoder->encodePassword($user, "password"))
                 ->setClient($clients[random_int(0, count($clients) - 1)]);
 
             $manager->persist($user);
