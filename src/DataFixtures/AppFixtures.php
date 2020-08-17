@@ -45,18 +45,27 @@ class AppFixtures extends Fixture
         }
 
 
+        $roles = ["ROLE_USER", "ROLE_CLIENT"];
+
         for($i = 0; $i < 20; $i++){
             $user = new User();
 
 
             $user->setName($faker->name)
                 ->setEmail($faker->email)
-                ->setRole("user")
+                ->setRole($roles[ random_int(0, count($roles) - 1) ] )
                 ->setPassword($this->encoder->encodePassword($user, "password"))
                 ->setClient($clients[random_int(0, count($clients) - 1)]);
 
             $manager->persist($user);
         }
+        $userAdmin = new User();
+        $userAdmin->setName("Théo Kinder")
+            ->setEmail("kinder.theo@gmail.com")
+            ->setRole("ROLE_ADMIN")
+            ->setPassword($this->encoder->encodePassword($userAdmin, "password"))
+            ->setClient($clients[random_int(0, count($clients) - 1)]);
+        $manager->persist($userAdmin);
 
         $manager->flush();
     }
