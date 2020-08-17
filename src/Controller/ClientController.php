@@ -8,7 +8,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -42,6 +41,8 @@ class ClientController extends AbstractController
             $errorsSerialized = $serializer->serialize($errors, "json");
             return new Response($errorsSerialized, 400, ["Content-type" => "application/json"]);
         }
+
+        $client->setRole("ROLE_CLIENT");
 
         $manager->persist($client);
         $manager->flush();
@@ -123,9 +124,10 @@ class ClientController extends AbstractController
     }
 
     /*TODO VALIDATION (DONE)*/
-    /*TODO OAUTH*/
+    /*TODO JWT (DONE)*/
     /*TODO PAGINATION (DONE)*/
-    /*TODO LISTENER POUR LES ERREURS*/
+    /*TODO LISTENER POUR LES ERREURS (DONE)*/
+    /*TODO METTRE EN PLACE LES DIFFERENTS GRADES (DONE)*/
     /*TODO CACHE*/
     /*TODO DOC*/
 
