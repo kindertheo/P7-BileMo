@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Product;
-use App\Repository\ProductRepository;
 use App\Service\PaginationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -56,7 +55,6 @@ class ProductController extends AbstractController
         $data = $paginationService->paginateArray($data);
 
         $data = $serializer->serialize($data, "json");
-
 
         $response = new Response($data);
         $response->headers->set('Content-Type', 'application/json');

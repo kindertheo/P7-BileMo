@@ -8,9 +8,18 @@ use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Persistence\ObjectManager;
 use Faker\Factory;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class AppFixtures extends Fixture
 {
+    private $encoder;
+
+    public function __construct(UserPasswordEncoderInterface $encoder)
+    {
+        $this->encoder = $encoder;
+    }
+
     public function load(ObjectManager $manager)
     {
         $faker = Factory::create();
@@ -35,17 +44,28 @@ class AppFixtures extends Fixture
         $clients[] = $client;
         }
 
+
+        $roles = ["ROLE_USER", "ROLE_CLIENT"];
+
         for($i = 0; $i < 20; $i++){
             $user = new User();
 
+
             $user->setName($faker->name)
                 ->setEmail($faker->email)
-                ->setRole("user")
-                ->setPassword($faker->password)
+                ->setRole($roles[ random_int(0, count($roles) - 1) ] )
+                ->setPassword($this->encoder->encodePassword($user, "password"))
                 ->setClient($clients[random_int(0, count($clients) - 1)]);
 
             $manager->persist($user);
         }
+        $userAdmin = new User();
+        $userAdmin->setName("Théo Kinder")
+            ->setEmail("kinder.theo@gmail.com")
+            ->setRole("ROLE_ADMIN")
+            ->setPassword($this->encoder->encodePassword($userAdmin, "password"))
+            ->setClient($clients[random_int(0, count($clients) - 1)]);
+        $manager->persist($userAdmin);
 
         $manager->flush();
     }
