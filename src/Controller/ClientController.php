@@ -3,6 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Client;
+use App\Service\CheckingErrorsService;
+use App\Service\JsonToEntityService;
+use JMS\Serializer\DeserializationContext;
 use JMS\Serializer\SerializationContext;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -31,20 +34,16 @@ class ClientController extends AbstractController
      *)
      * @param Request $request
      * @param SerializerInterface $serializer
-     * @param ValidatorInterface $validator
+     * @param CheckingErrorsService $errorsService
      * @return Response
      */
-    public function addClient(Request $request, SerializerInterface $serializer, ValidatorInterface $validator){
+    public function addClient(Request $request, SerializerInterface $serializer, CheckingErrorsService $errorsService){
 
-        $client = $serializer->deserialize($request->getContent(), Client::class, "json");
+        $client = $serializer->deserialize($request->getContent(), Client::class, "json", DeserializationContext::create()->setGroups("client"));
 
         $manager = $this->getDoctrine()->getManager();
 
-        $errors = $validator->validate($client);
-        if(count($errors) > 0){
-            $errorsSerialized = $serializer->serialize($errors, "json");
-            return new Response($errorsSerialized, 400, ["Content-type" => "application/json"]);
-        }
+        $errorsService->errorsValidation($client);
 
         $manager->persist($client);
         $manager->flush();
@@ -98,25 +97,16 @@ class ClientController extends AbstractController
      * @param Client $client
      * @param Request $request
      * @param SerializerInterface $serializer
-     * @param ValidatorInterface $validator
+     * @param CheckingErrorsService $errorsService
+     * @param JsonToEntityService $jsonToEntityService
      * @return Response
      */
-    public function updateClient(Client $client, Request $request, SerializerInterface $serializer, ValidatorInterface $validator){
+    public function updateClient(Client $client, Request $request, SerializerInterface $serializer, CheckingErrorsService $errorsService, JsonToEntityService $jsonToEntityService){
         $data = json_decode($request->getContent(), true);
 
-        foreach ($data as $key => $value){
-            if($key && !empty($value)) {
-                $name = ucfirst($key);
-                $setter = 'set'.$name;
-                $client->$setter($value);
-            }
-        }
+        $client = $jsonToEntityService->JsonToEntity($client, $data);
 
-        $errors = $validator->validate($client);
-        if(count($errors) > 0){
-            $errorsSerialized = $serializer->serialize($errors, "json");
-            return new Response($errorsSerialized, 400, ["Content-type" => "application/json"]);
-        }
+        $errorsService->errorsValidation($client);
 
         $manager = $this->getDoctrine()->getManager();
         $manager->persist($client);
@@ -158,7 +148,6 @@ class ClientController extends AbstractController
     /*TODO PAGINATION (DONE)*/
     /*TODO METTRE EN PLACE LES DIFFERENTS GRADES*/
     /*TODO CACHE*/
-    /*TODO VERIFIER QUE LE CLIENT PEUT SEULEMENT VOIR SES UTILISATEURS ET PAS CEUX DES AUTRES CLIENTS*/
     /*TODO PARAMETRE DOC A AJOUTER PEUT ETRE*/
 
 

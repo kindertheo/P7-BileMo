@@ -4,7 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Client;
 use App\Entity\User;
+use App\Service\CheckingErrorsService;
+use App\Service\JsonToEntityService;
 use App\Service\PaginationService;
+use JMS\Serializer\DeserializationContext;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -93,6 +96,7 @@ class UserController extends AbstractController
                 ]
             );
 
+        /*Verify if user is part of client*/
         $this->denyAccessUnlessGranted("view", $manager->getRepository(Client::class)->find($clientId));
 
         $data = $serializer->serialize($data, 'json', SerializationContext::create()->setGroups(array("user")));
@@ -120,9 +124,9 @@ class UserController extends AbstractController
      * @param ValidatorInterface $validator
      * @return Response
      */
-    public function addUser(Request $request, SerializerInterface $serializer, UserPasswordEncoderInterface $encoder, ValidatorInterface $validator){
+    public function addUser(Request $request, SerializerInterface $serializer, UserPasswordEncoderInterface $encoder, CheckingErrorsService $errorsService){
         $data = $request->getContent();
-        $user = $serializer->deserialize($data, User::class,'json', ['groups'=> 'user']);
+        $user = $serializer->deserialize($data, User::class,'json', DeserializationContext::create()->setGroups(['groups'=> 'user']) );
 
         $dataArray = json_decode($data, true);
         $encodedPassword = $encoder->encodePassword($user ,$dataArray['password']);
@@ -135,17 +139,12 @@ class UserController extends AbstractController
 
         $manager = $this->getDoctrine()->getManager();
 
-        $errors = $validator->validate($user);
-        if(count($errors) > 0){
-            $errorsSerialized = $serializer->serialize($errors, "json");
-            /*TODO RENVOIS CLIENT SHOULD NOT BE BLANK S'IL NE TROUVE PAS LE CLIENT */
-            return new Response($errorsSerialized, 400, ["Content-type" => "application/json"]);
-        }
+        $errorsService->errorsValidation($user);
 
         $manager->persist($user);
         $manager->flush();
 
-        $response = new Response($user);
+        $response = new Response($serializer->serialize($user, "json"));
         $response->headers->set('Content-Type', 'application/json');
 
         return $response;
@@ -190,7 +189,7 @@ class UserController extends AbstractController
      * @param SerializerInterface $serializer
      * @return Response
      */
-    public function updateUser(User $user, Request $request, ValidatorInterface $validator, SerializerInterface $serializer){
+    public function updateUser(User $user, Request $request, ValidatorInterface $validator, SerializerInterface $serializer, JsonToEntityService $jsonToEntityService, CheckingErrorsService $errorsService){
         $manager = $this->getDoctrine()->getManager();
         $data = json_decode($request->getContent(), true);
 
@@ -198,19 +197,8 @@ class UserController extends AbstractController
             $data['client'] = $this->getDoctrine()->getManager()->getRepository(Client::class)->find($data['client']);
         }
 
-        foreach ($data as $key => $value){
-            if($key && !empty($value)) {
-                $name = ucfirst($key);
-                $setter = 'set'.$name;
-                $user->$setter($value);
-            }
-        }
-
-        $errors = $validator->validate($user);
-        if(count($errors) > 0){
-            $errorsSerialized = $serializer->serialize($errors, "json");
-            return new Response($errorsSerialized, 400, ["Content-type" => "application/json"]);
-        }
+        $user = $jsonToEntityService->JsonToEntity($user, $data);
+        $errorsService->errorsValidation($user);
 
         $manager->persist($user);
         $manager->flush();
