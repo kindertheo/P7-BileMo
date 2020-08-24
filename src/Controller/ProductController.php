@@ -4,30 +4,33 @@ namespace App\Controller;
 
 use App\Entity\Product;
 use App\Service\PaginationService;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use JMS\Serializer\SerializerInterface;
+use Swagger\Annotations as SWG;
+
 
 class ProductController extends AbstractController
 {
-    /**
-     * @Route("/product/index", name="product")
-     */
-    public function index()
-    {
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/ProductController.php',
-        ]);
-    }
 
     /**
      * @Route("/product/{id}", name="show_product", methods={"GET"})
+     * @SWG\Response(
+     *     response=200,
+     *     description="Retourne un produit",
+     *     @SWG\Schema(
+     *
+     *     @SWG\Items(ref=@Model(type=Product::class)
+     *          )
+     *      )
+     *)
      * @ParamConverter()
      * @param Product $product
      * @param SerializerInterface $serializer
@@ -45,6 +48,15 @@ class ProductController extends AbstractController
 
     /**
      * @Route("/product", name="list_product", methods={"GET"})
+     * @SWG\Response(
+     *     response=200,
+     *     description="Retourne la liste de tout les produits",
+     *     @SWG\Schema(
+     *
+     *     @SWG\Items(ref=@Model(type=Product::class)
+     *          )
+     *      )
+     *)
      * @param SerializerInterface $serializer
      * @param PaginationService $paginationService
      * @return Response
@@ -64,7 +76,18 @@ class ProductController extends AbstractController
 
     /**
      * @Route("/product/add", name="add_product", methods={"POST"})
+     * @SWG\Response(
+     *     response=201,
+     *     description="Ajoute un produit",
+     *     @SWG\Schema(
+     *
+     *     @SWG\Items(ref=@Model(type=Product::class)
+     *          )
+     *      )
+     *)
+     *
      * @ParamConverter("product")
+     * @IsGranted("ROLE_ADMIN")
      * @param Request $request
      * @param SerializerInterface $serializer
      * @param ValidatorInterface $validator
@@ -85,7 +108,7 @@ class ProductController extends AbstractController
         $manager->persist($product);
         $manager->flush();
 
-        $response = new Response($data);
+        $response = new Response($data, 201);
         $response->headers->set('Content-Type', 'application/json');
 
         return $response;
@@ -93,6 +116,16 @@ class ProductController extends AbstractController
 
     /**
      * @Route("/product/delete/{id}", name="delete_product", methods={"DELETE"} )
+     * @IsGranted("ROLE_ADMIN")
+     * @SWG\Response(
+     *     response=204,
+     *     description="Supprime un produit",
+     *     @SWG\Schema(
+     *
+     *     @SWG\Items(ref=@Model(type=Product::class)
+     *          )
+     *      )
+     *)
      * @param Product $product
      * @param SerializerInterface $serializer
      * @return Response
@@ -104,12 +137,22 @@ class ProductController extends AbstractController
         $manager->flush();
 
         $jsonResponse = new JsonResponse("", 204);
-        $response = new Response("", 204);
+        //$response = new Response("", 204);
         return $jsonResponse;
     }
 
     /**
      * @Route("/product/update/{id}", name="update_product", methods={"PUT"} )
+     * @IsGranted("ROLE_ADMIN")
+     * @SWG\Response(
+     *     response=200,
+     *     description="Modifie un produit",
+     *     @SWG\Schema(
+     *
+     *     @SWG\Items(ref=@Model(type=Product::class)
+     *          )
+     *      )
+     *)
      * @param Product $product
      * @param Request $request
      * @param SerializerInterface $serializer
