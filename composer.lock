@@ -1,4 +1,17 @@
 {
+    "name": "kindertheo/bilemo",
+    "version": "0.5.0",
+    "description": "BileMo - Création d'une API - Projet 7 - Développeur d'application PHP/Symfony",
+    "type": "project",
+    "keywords": [
+        "symfony",
+        "api",
+        "web",
+        "application",
+        "php",
+        "mvc"
+    ],
+    "license": "MIT",
     "_readme": [
         "This file locks the dependencies of your project to a known state",
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
