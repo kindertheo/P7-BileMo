@@ -79,6 +79,7 @@ class ClientController extends AbstractController
 
     /**
      * @Route("/client/{id}", name="show_client", methods={"GET"})
+     * @IsGranted("ROLE_CLIENT")
      * @SWG\Response(
      *     response=200,
      *     description="Affiche un client",
@@ -100,8 +101,7 @@ class ClientController extends AbstractController
      * @return Response
      */
     public function showClient(Client $client, SerializerInterface $serializer){
-
-        $this->denyAccessUnlessGranted("view");
+        $this->denyAccessUnlessGranted("view", $client);
 
         $clientJson = $serializer->serialize($client, "json", SerializationContext::create()->setGroups(array("client")));
         $response = new Response($clientJson, 200);
@@ -200,7 +200,5 @@ class ClientController extends AbstractController
     }
 
     /*TODO CACHE*/
-    /*TODO PARAMETRE DOC A AJOUTER PEUT ETRE*/
-
 
 }
