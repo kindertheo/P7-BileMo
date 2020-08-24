@@ -4,13 +4,36 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Hateoas\Configuration\Annotation\Exclusion;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Serializer\Annotation\Groups;
+use JMS\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Hateoas\Configuration\Annotation as Hateoas;
 
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
+ *
+ * @Hateoas\Relation(
+ *     "update",
+ *     href = @Hateoas\Route(
+ *     "update_user",
+ *     parameters = { "id" = "expr(object.getId())" },
+ *     absolute = true
+ *      ),
+ *     exclusion=@Exclusion(groups="user")
+ * )
+ *
+ * @Hateoas\Relation(
+ *     "delete",
+ *     href = @Hateoas\Route(
+ *     "delete_user",
+ *     parameters = { "id" = "expr(object.getId())" },
+ *     absolute = true
+ *      ),
+ *     exclusion=@Exclusion(groups="user")
+ * )
+ *
  */
 class User implements UserInterface
 {

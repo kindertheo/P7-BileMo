@@ -7,19 +7,31 @@ use App\Entity\User;
 use App\Service\PaginationService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Serializer\SerializerInterface;
+use JMS\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use JMS\Serializer\SerializationContext;
+use Swagger\Annotations as SWG;
+use Nelmio\ApiDocBundle\Annotation\Model;
+
 
 class UserController extends AbstractController
 {
 
     /**
      * @Route("/user/{clientName}", name="list_user", methods={"GET"})
+     * @SWG\Response(
+     *     response=200,
+     *     description="Retourne tout les utilisateurs selon un client",
+     *     @SWG\Schema(
+     *
+     *     @SWG\Items(ref=@Model(type=User::class, groups={"user"})
+     *          )
+     *      )
+     *)
      * @param SerializerInterface $serializer
      * @param $clientName
      * @param PaginationService $paginationService
@@ -39,7 +51,7 @@ class UserController extends AbstractController
             );
         $data = $paginationService->paginateArray($data);
 
-        $data = $serializer->serialize($data, "json", ['groups' => 'user']);
+        $data = $serializer->serialize($data, "json", SerializationContext::create()->setGroups(array("user")));
 
         $response = new Response($data);
         $response->headers->set('Content-Type', 'application/json');
@@ -50,6 +62,15 @@ class UserController extends AbstractController
 
     /**
      * @Route("/user/{clientName}/{userId}", name="show_user", methods={"GET"})
+     * @SWG\Response(
+     *     response=200,
+     *     description="Retourne un utilisateur selon un client",
+     *     @SWG\Schema(
+     *
+     *     @SWG\Items(ref=@Model(type=User::class, groups={"user"})
+     *          )
+     *      )
+     *)
      * @ParamConverter()
      * @param SerializerInterface $serializer
      * @param $userId
@@ -69,7 +90,7 @@ class UserController extends AbstractController
                 ]
             );
 
-        $data = $serializer->serialize($data, 'json', ['groups' => 'user']);
+        $data = $serializer->serialize($data, 'json', SerializationContext::create()->setGroups(array("user")));
 
         $response = new Response($data);
         $response->headers->set('Content-Type', 'application/json');
@@ -79,7 +100,16 @@ class UserController extends AbstractController
 
     /**
      * @Route("/user/add", name="add_user", methods={"POST"})
-     * @ParamConverter("product")
+     * @SWG\Response(
+     *     response=201,
+     *     description="Ajoute un utilisateur",
+     *     @SWG\Schema(
+     *
+     *     @SWG\Items(ref=@Model(type=User::class, groups={"user"})
+     *          )
+     *      )
+     *)
+     * @ParamConverter("product") TODO A CHECKER
      * @param Request $request
      * @param SerializerInterface $serializer
      * @return Response
@@ -95,6 +125,7 @@ class UserController extends AbstractController
         $clientId = $dataArray['client'];
         $client = $this->getDoctrine()->getManager()->getRepository(Client::class)->findOneBy(['id' => $clientId]);
         $user->setClient($client);
+        $user->setRole("ROLE_USER");
 
         $manager = $this->getDoctrine()->getManager();
 
@@ -116,6 +147,15 @@ class UserController extends AbstractController
 
     /**
      * @Route("/user/delete/{id}", name="delete_user", methods={"DELETE"})
+     * @SWG\Response(
+     *     response=204,
+     *     description="Supprime un utilisateur",
+     *     @SWG\Schema(
+     *
+     *     @SWG\Items(ref=@Model(type=User::class, groups={"user"})
+     *          )
+     *      )
+     *)
      * @param User $user
      * @return Response
      */
@@ -129,8 +169,19 @@ class UserController extends AbstractController
 
     /**
      * @Route("/user/update/{id}", name="update_user", methods={"PUT"})
+     * @SWG\Response(
+     *     response=200,
+     *     description="Modifie un utilisateur",
+     *     @SWG\Schema(
+     *
+     *     @SWG\Items(ref=@Model(type=User::class, groups={"user"})
+     *          )
+     *      )
+     *)
      * @param User $user
      * @param Request $request
+     * @param ValidatorInterface $validator
+     * @param SerializerInterface $serializer
      * @return Response
      */
     public function updateUser(User $user, Request $request, ValidatorInterface $validator, SerializerInterface $serializer){

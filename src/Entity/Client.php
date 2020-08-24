@@ -6,11 +6,39 @@ use App\Repository\ClientRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use JMS\Serializer\Annotation\Expose;
+use JMS\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Hateoas\Configuration\Annotation as Hateoas;
+use JMS\Serializer\Annotation\ExclusionPolicy;
+use Hateoas\Configuration\Annotation\Exclusion;
 
 /**
  * @ORM\Entity(repositoryClass=ClientRepository::class)
+ * @ExclusionPolicy("all")
+ * @Hateoas\Relation(
+ *     "update",
+ *     href = @Hateoas\Route(
+ *     "update_client",
+ *     parameters = { "id" = "expr(object.getId())" },
+ *     absolute = true
+ *      ),
+ *     exclusion=@Exclusion(groups="client")
+ * )
+ *
+ * @Hateoas\Relation(
+ *     "delete",
+ *     href = @Hateoas\Route(
+ *     "delete_client",
+ *     parameters = { "id" = "expr(object.getId())" },
+ *     absolute = true
+ *      ),
+ *     exclusion=@Exclusion(groups="client")
+
+ * )
+ *
+ *
+
  */
 class Client
 {
@@ -18,13 +46,16 @@ class Client
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups("client")
+     * @Groups({"client"})
+     * @Expose()
+     *
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Groups("client")
+     * @Groups({"client"})
+     * @Expose()
      * @Assert\NotBlank
      * @Assert\Length(
      *     min = 4,
@@ -32,6 +63,7 @@ class Client
      *     minMessage = "Le nom du client est trop court.",
      *     maxMessage = "Le nom du client est trop long."
      * )
+     *
      */
     private $name;
 
