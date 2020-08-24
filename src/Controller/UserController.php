@@ -49,6 +49,9 @@ class UserController extends AbstractController
                     "client" => $clientId
                 ]
             );
+
+        $this->denyAccessUnlessGranted("view", $manager->getRepository(Client::class)->find($clientId));
+
         $data = $paginationService->paginateArray($data);
 
         $data = $serializer->serialize($data, "json", SerializationContext::create()->setGroups(array("user")));
@@ -90,6 +93,8 @@ class UserController extends AbstractController
                 ]
             );
 
+        $this->denyAccessUnlessGranted("view", $manager->getRepository(Client::class)->find($clientId));
+
         $data = $serializer->serialize($data, 'json', SerializationContext::create()->setGroups(array("user")));
 
         $response = new Response($data);
@@ -109,9 +114,10 @@ class UserController extends AbstractController
      *          )
      *      )
      *)
-     * @ParamConverter("product") TODO A CHECKER
      * @param Request $request
      * @param SerializerInterface $serializer
+     * @param UserPasswordEncoderInterface $encoder
+     * @param ValidatorInterface $validator
      * @return Response
      */
     public function addUser(Request $request, SerializerInterface $serializer, UserPasswordEncoderInterface $encoder, ValidatorInterface $validator){
