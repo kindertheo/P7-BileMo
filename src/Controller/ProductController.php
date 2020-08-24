@@ -14,7 +14,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use JMS\Serializer\SerializerInterface;
 use Swagger\Annotations as SWG;
 
@@ -33,6 +32,13 @@ class ProductController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Tag(name="Produit")
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Toutes les personnes authentifiées peuvent consulter le catalogue produit",
+     *     type="string"
+     * )
      * @ParamConverter()
      * @param Product $product
      * @param SerializerInterface $serializer
@@ -59,6 +65,13 @@ class ProductController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Toute les personnes authentifiées peuvent consulter le catalogue produits",
+     *     type="string"
+     * )
+     * @SWG\Tag(name="Produit")
      * @param SerializerInterface $serializer
      * @param PaginationService $paginationService
      * @return Response
@@ -78,6 +91,7 @@ class ProductController extends AbstractController
 
     /**
      * @Route("/product/add", name="add_product", methods={"POST"})
+     * @IsGranted("ROLE_ADMIN")
      * @SWG\Response(
      *     response=201,
      *     description="Ajoute un produit",
@@ -87,9 +101,29 @@ class ProductController extends AbstractController
      *          )
      *      )
      *)
-     *
+     * @SWG\Tag(name="Produit")
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     description="Champs produit à compléter",
+     *     required=true,
+     *     @SWG\Schema(
+     *         type="array",
+     *         @SWG\Items(
+     *            type="object",
+     *            @SWG\Property(property="name", type="string"),
+     *            @SWG\Property(property="prince", type="integer"),
+     *            @SWG\Property(property="description", type="integer"),
+     *         )
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Requiert le rôle d'administrateur",
+     *     type="string"
+     * )
      * @ParamConverter("product")
-     * @IsGranted("ROLE_ADMIN")
      * @param Request $request
      * @param SerializerInterface $serializer
      * @param CheckingErrorsService $errorsService
@@ -125,6 +159,13 @@ class ProductController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Tag(name="Produit")
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Requiert le rôle d'administrateur",
+     *     type="string"
+     * )
      * @param Product $product
      * @return Response
      */
@@ -150,6 +191,29 @@ class ProductController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Tag(name="Produit")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     description="Champs produit à compléter",
+     *     required=true,
+     *     @SWG\Schema(
+     *         type="array",
+     *         @SWG\Items(
+     *            type="object",
+     *            @SWG\Property(property="name", type="string"),
+     *            @SWG\Property(property="prince", type="integer"),
+     *            @SWG\Property(property="description", type="integer"),
+     *         )
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Requiert le rôle d'administrateur",
+     *     type="string"
+     * )
      * @param Product $product
      * @param Request $request
      * @param SerializerInterface $serializer

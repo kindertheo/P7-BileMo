@@ -15,7 +15,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use JMS\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Swagger\Annotations as SWG;
 
 class ClientController extends AbstractController
@@ -32,6 +31,26 @@ class ClientController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     description="Champs client à compléter",
+     *     required=true,
+     *     @SWG\Schema(
+     *         type="array",
+     *         @SWG\Items(
+     *            type="object",
+     *            @SWG\Property(property="name", type="string"),
+     *         )
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Requiert le rôle d'administrateur",
+     *     type="string"
+     * )
+     * @SWG\Tag(name="Client")
      * @param Request $request
      * @param SerializerInterface $serializer
      * @param CheckingErrorsService $errorsService
@@ -69,11 +88,20 @@ class ClientController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Requiert d'être un utilisateur lié au client",
+     *     type="string"
+     * )
+     * @SWG\Tag(name="Client")
      * @param Client $client
      * @param SerializerInterface $serializer
      * @return Response
      */
     public function showClient(Client $client, SerializerInterface $serializer){
+
+        $this->denyAccessUnlessGranted("view");
 
         $clientJson = $serializer->serialize($client, "json", SerializationContext::create()->setGroups(array("client")));
         $response = new Response($clientJson, 200);
@@ -94,6 +122,26 @@ class ClientController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Tag(name="Client")
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     description="Champs client à compléter",
+     *     required=true,
+     *     @SWG\Schema(
+     *         type="array",
+     *         @SWG\Items(
+     *            type="object",
+     *            @SWG\Property(property="name", type="string"),
+     *         )
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Requiert le rôle d'administrateur",
+     *     type="string"
+     * )
      * @param Client $client
      * @param Request $request
      * @param SerializerInterface $serializer
@@ -132,6 +180,12 @@ class ClientController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Requiert le rôle d'administrateur",
+     *     type="string"
+     * )     * @SWG\Tag(name="Client")
      * @param Client $client
      * @return Response
      */
@@ -145,8 +199,6 @@ class ClientController extends AbstractController
         return $response;
     }
 
-    /*TODO PAGINATION (DONE)*/
-    /*TODO METTRE EN PLACE LES DIFFERENTS GRADES*/
     /*TODO CACHE*/
     /*TODO PARAMETRE DOC A AJOUTER PEUT ETRE*/
 
