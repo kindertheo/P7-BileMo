@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Hateoas\Configuration\Annotation\Exclusion;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 use JMS\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -34,6 +35,7 @@ use Hateoas\Configuration\Annotation as Hateoas;
  *     exclusion=@Exclusion(groups="user")
  * )
  *
+ * @UniqueEntity("email")
  */
 class User implements UserInterface
 {
@@ -91,6 +93,7 @@ class User implements UserInterface
      * @ORM\ManyToOne(targetEntity=Client::class, inversedBy="user")
      * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      * @Assert\NotBlank
+     * @Groups({"user"})
      */
     private $client;
 

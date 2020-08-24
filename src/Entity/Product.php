@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\ProductRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Hateoas\Configuration\Annotation as Hateoas;
 
@@ -36,6 +37,7 @@ use Hateoas\Configuration\Annotation as Hateoas;
  *     absolute = true
  *      )
  * )
+ * @UniqueEntity("name")
  */
 class Product
 {
