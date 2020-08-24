@@ -240,5 +240,4 @@ class ProductController extends AbstractController
         return $response;
     }
 
-    /*TODO ERREUR ENCODAGE, A VERIFIER*/
 }
