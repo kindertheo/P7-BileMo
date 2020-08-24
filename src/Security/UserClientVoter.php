@@ -48,7 +48,6 @@ class UserClientVoter extends Voter {
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
         $user = $token->getUser();
-
         if (!$user instanceof User) {
             // the user must be logged in; if not, deny access
             return false;
@@ -66,7 +65,7 @@ class UserClientVoter extends Voter {
 
 
     private function canView(Client $client, User $user){
-        if($user->getClient() === $client OR $user->getRole() === "ROLE_ADMIN"){
+        if($user->getClient() === $client OR in_array("ROLE_ADMIN" ,$user->getRoles())){
             return true;
         }
         return false;
