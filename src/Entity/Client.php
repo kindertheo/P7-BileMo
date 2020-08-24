@@ -48,7 +48,7 @@ class Client
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({"client", "user"})
+     * @Groups({"client"})
      * @Expose()
      *
      */
@@ -56,7 +56,7 @@ class Client
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Groups({"client", "user"})
+     * @Groups({"client"})
      * @Expose()
      * @Assert\NotBlank
      * @Assert\Length(

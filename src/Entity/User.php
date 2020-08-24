@@ -93,7 +93,6 @@ class User implements UserInterface
      * @ORM\ManyToOne(targetEntity=Client::class, inversedBy="user")
      * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      * @Assert\NotBlank
-     * @Groups({"user"})
      */
     private $client;
 
