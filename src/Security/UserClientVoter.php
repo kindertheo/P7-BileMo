@@ -66,6 +66,9 @@ class UserClientVoter extends Voter {
 
 
     private function canView(Client $client, User $user){
-        return $user->getClient() === $client;
+        if($user->getClient() === $client OR $user->getRole() === "ROLE_ADMIN"){
+            return true;
+        }
+        return false;
     }
 }
