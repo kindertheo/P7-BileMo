@@ -6,8 +6,8 @@ security:
 
     role_hierarchy:
         ROLE_USER:      ROLE_USER
-        ROLE_CLIENT:    [ROLE_CLIENT, ROLE_USER]
-        ROLE_ADMIN:     [ROLE_CLIENT, ROLE_ADMIN]
+        ROLE_CLIENT:    [ROLE_USER, ROLE_CLIENT]
+        ROLE_ADMIN:     [ROLE_USER, ROLE_CLIENT, ROLE_ADMIN]
 
     providers:
         app_user_provider:
