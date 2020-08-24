@@ -5,9 +5,37 @@ namespace App\Entity;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Hateoas\Configuration\Annotation as Hateoas;
 
 /**
  * @ORM\Entity(repositoryClass=ProductRepository::class)
+ *
+ * @Hateoas\Relation(
+ *     "show",
+ *     href = @Hateoas\Route(
+ *     "show_product",
+ *     parameters = { "id" = "expr(object.getId())" },
+ *     absolute = true
+ *      )
+ * )
+ *
+ * @Hateoas\Relation(
+ *     "delete",
+ *     href = @Hateoas\Route(
+ *     "delete_product",
+ *     parameters={ "id" = "expr(object.getId())" },
+ *     absolute = true
+ *      )
+ * )
+ *
+ * @Hateoas\Relation(
+ *     "update",
+ *     href = @Hateoas\Route(
+ *     "update_product",
+ *     parameters={ "id" = "expr(object.getId())" },
+ *     absolute = true
+ *      )
+ * )
  */
 class Product
 {
