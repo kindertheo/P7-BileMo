@@ -6,8 +6,10 @@ use App\Repository\ClientRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as Serializer;
 use JMS\Serializer\Annotation\Expose;
 use JMS\Serializer\Annotation\Groups;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation\ExclusionPolicy;
@@ -38,7 +40,7 @@ use Hateoas\Configuration\Annotation\Exclusion;
  * )
  *
  *
-
+ * @UniqueEntity("name")
  */
 class Client
 {
@@ -63,13 +65,11 @@ class Client
      *     minMessage = "Le nom du client est trop court.",
      *     maxMessage = "Le nom du client est trop long."
      * )
-     *
      */
     private $name;
 
     /**
      * @ORM\OneToMany(targetEntity=User::class, mappedBy="client")
-     * @Assert\NotBlank
      */
     private $user;
 

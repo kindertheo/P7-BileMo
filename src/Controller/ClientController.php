@@ -3,6 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Client;
+use App\Service\CheckingErrorsService;
+use App\Service\JsonToEntityService;
+use JMS\Serializer\DeserializationContext;
 use JMS\Serializer\SerializationContext;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -12,7 +15,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use JMS\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Swagger\Annotations as SWG;
 
 class ClientController extends AbstractController
@@ -29,22 +31,38 @@ class ClientController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     description="Champs client à compléter",
+     *     required=true,
+     *     @SWG\Schema(
+     *         type="array",
+     *         @SWG\Items(
+     *            type="object",
+     *            @SWG\Property(property="name", type="string"),
+     *         )
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Requiert le rôle d'administrateur",
+     *     type="string"
+     * )
+     * @SWG\Tag(name="Client")
      * @param Request $request
      * @param SerializerInterface $serializer
-     * @param ValidatorInterface $validator
+     * @param CheckingErrorsService $errorsService
      * @return Response
      */
-    public function addClient(Request $request, SerializerInterface $serializer, ValidatorInterface $validator){
+    public function addClient(Request $request, SerializerInterface $serializer, CheckingErrorsService $errorsService){
 
-        $client = $serializer->deserialize($request->getContent(), Client::class, "json");
+        $client = $serializer->deserialize($request->getContent(), Client::class, "json", DeserializationContext::create()->setGroups("client"));
 
         $manager = $this->getDoctrine()->getManager();
 
-        $errors = $validator->validate($client);
-        if(count($errors) > 0){
-            $errorsSerialized = $serializer->serialize($errors, "json");
-            return new Response($errorsSerialized, 400, ["Content-type" => "application/json"]);
-        }
+        $errorsService->errorsValidation($client);
 
         $manager->persist($client);
         $manager->flush();
@@ -61,6 +79,7 @@ class ClientController extends AbstractController
 
     /**
      * @Route("/client/{id}", name="show_client", methods={"GET"})
+     * @IsGranted("ROLE_CLIENT")
      * @SWG\Response(
      *     response=200,
      *     description="Affiche un client",
@@ -70,11 +89,19 @@ class ClientController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Requiert d'être un utilisateur lié au client",
+     *     type="string"
+     * )
+     * @SWG\Tag(name="Client")
      * @param Client $client
      * @param SerializerInterface $serializer
      * @return Response
      */
     public function showClient(Client $client, SerializerInterface $serializer){
+        $this->denyAccessUnlessGranted("view", $client);
 
         $clientJson = $serializer->serialize($client, "json", SerializationContext::create()->setGroups(array("client")));
         $response = new Response($clientJson, 200);
@@ -95,28 +122,39 @@ class ClientController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Tag(name="Client")
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     description="Champs client à compléter",
+     *     required=true,
+     *     @SWG\Schema(
+     *         type="array",
+     *         @SWG\Items(
+     *            type="object",
+     *            @SWG\Property(property="name", type="string"),
+     *         )
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Requiert le rôle d'administrateur",
+     *     type="string"
+     * )
      * @param Client $client
      * @param Request $request
      * @param SerializerInterface $serializer
-     * @param ValidatorInterface $validator
+     * @param CheckingErrorsService $errorsService
+     * @param JsonToEntityService $jsonToEntityService
      * @return Response
      */
-    public function updateClient(Client $client, Request $request, SerializerInterface $serializer, ValidatorInterface $validator){
+    public function updateClient(Client $client, Request $request, SerializerInterface $serializer, CheckingErrorsService $errorsService, JsonToEntityService $jsonToEntityService){
         $data = json_decode($request->getContent(), true);
 
-        foreach ($data as $key => $value){
-            if($key && !empty($value)) {
-                $name = ucfirst($key);
-                $setter = 'set'.$name;
-                $client->$setter($value);
-            }
-        }
+        $client = $jsonToEntityService->JsonToEntity($client, $data);
 
-        $errors = $validator->validate($client);
-        if(count($errors) > 0){
-            $errorsSerialized = $serializer->serialize($errors, "json");
-            return new Response($errorsSerialized, 400, ["Content-type" => "application/json"]);
-        }
+        $errorsService->errorsValidation($client);
 
         $manager = $this->getDoctrine()->getManager();
         $manager->persist($client);
@@ -142,6 +180,12 @@ class ClientController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Requiert le rôle d'administrateur",
+     *     type="string"
+     * )     * @SWG\Tag(name="Client")
      * @param Client $client
      * @return Response
      */
@@ -155,11 +199,6 @@ class ClientController extends AbstractController
         return $response;
     }
 
-    /*TODO PAGINATION (DONE)*/
-    /*TODO METTRE EN PLACE LES DIFFERENTS GRADES*/
     /*TODO CACHE*/
-    /*TODO VERIFIER QUE LE CLIENT PEUT SEULEMENT VOIR SES UTILISATEURS ET PAS CEUX DES AUTRES CLIENTS*/
-    /*TODO PARAMETRE DOC A AJOUTER PEUT ETRE*/
-
 
 }

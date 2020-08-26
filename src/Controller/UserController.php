@@ -4,7 +4,11 @@ namespace App\Controller;
 
 use App\Entity\Client;
 use App\Entity\User;
+use App\Service\CheckingErrorsService;
+use App\Service\JsonToEntityService;
 use App\Service\PaginationService;
+use JMS\Serializer\DeserializationContext;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,16 +36,27 @@ class UserController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Tag(name="Utilisateur")
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Seul les utilisateurs du même client peuvent être consulter",
+     *     type="string"
+     * )
      * @param SerializerInterface $serializer
      * @param $clientName
      * @param PaginationService $paginationService
      * @return Response
      */
-    /*TODO AJOUTER LE NOM DU CLIENT*/
     public function listUserByClient(SerializerInterface $serializer, $clientName, PaginationService $paginationService)
     {
         $manager = $this->getDoctrine()->getManager();
-        $clientId = $manager->getRepository(Client::class)->findOneBy(['name' => $clientName])->getId();
+        $client = $manager->getRepository(Client::class)->findOneBy(['name' => $clientName]);
+        if(!$client){
+            throw new \LogicException("Client not found!", 404);
+        }
+        $clientId = $client->getId();
+
 
         $data = $manager->getRepository(User::class)
             ->findBy(
@@ -74,6 +89,13 @@ class UserController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Seul les utilisateurs du même client peuvent être consulter",
+     *     type="string"
+     * )
+     * @SWG\Tag(name="Utilisateur")
      * @ParamConverter()
      * @param SerializerInterface $serializer
      * @param $userId
@@ -93,6 +115,7 @@ class UserController extends AbstractController
                 ]
             );
 
+        /*Verify if user is part of client*/
         $this->denyAccessUnlessGranted("view", $manager->getRepository(Client::class)->find($clientId));
 
         $data = $serializer->serialize($data, 'json', SerializationContext::create()->setGroups(array("user")));
@@ -105,47 +128,65 @@ class UserController extends AbstractController
 
     /**
      * @Route("/user/add", name="add_user", methods={"POST"})
+     * @IsGranted("ROLE_CLIENT")
      * @SWG\Response(
      *     response=201,
      *     description="Ajoute un utilisateur",
      *     @SWG\Schema(
-     *
-     *     @SWG\Items(ref=@Model(type=User::class, groups={"user"})
+     *              @SWG\Items(ref=@Model(type=User::class, groups={"user"})
      *          )
      *      )
      *)
+     * @SWG\Tag(name="Utilisateur")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     description="Champs utilisateur a compléter",
+     *     required=true,
+     *     @SWG\Schema(
+     *         type="array",
+     *         @SWG\Items(
+     *            type="object",
+     *            @SWG\Property(property="name", type="string"),
+     *            @SWG\Property(property="email", type="string"),
+     *            @SWG\Property(property="client", type="integer"),
+     *            @SWG\Property(property="password", type="string")
+     *         )
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Requiert le rôle de client ou d'administrateur",
+     *     type="string"
+     * )
      * @param Request $request
      * @param SerializerInterface $serializer
      * @param UserPasswordEncoderInterface $encoder
-     * @param ValidatorInterface $validator
+     * @param CheckingErrorsService $errorsService
      * @return Response
      */
-    public function addUser(Request $request, SerializerInterface $serializer, UserPasswordEncoderInterface $encoder, ValidatorInterface $validator){
+    public function addUser(Request $request, SerializerInterface $serializer, UserPasswordEncoderInterface $encoder, CheckingErrorsService $errorsService){
         $data = $request->getContent();
-        $user = $serializer->deserialize($data, User::class,'json', ['groups'=> 'user']);
+        $user = $serializer->deserialize($data, User::class,'json', DeserializationContext::create()->setGroups(['groups'=> 'user']) );
 
         $dataArray = json_decode($data, true);
         $encodedPassword = $encoder->encodePassword($user ,$dataArray['password']);
         $user->setPassword($encodedPassword);
 
-        $clientId = $dataArray['client'];
-        $client = $this->getDoctrine()->getManager()->getRepository(Client::class)->findOneBy(['id' => $clientId]);
-        $user->setClient($client);
+        $clientId = $this->getUser()->getClient();
+        $user->setClient($clientId);
         $user->setRole("ROLE_USER");
 
         $manager = $this->getDoctrine()->getManager();
 
-        $errors = $validator->validate($user);
-        if(count($errors) > 0){
-            $errorsSerialized = $serializer->serialize($errors, "json");
-            /*TODO RENVOIS CLIENT SHOULD NOT BE BLANK S'IL NE TROUVE PAS LE CLIENT */
-            return new Response($errorsSerialized, 400, ["Content-type" => "application/json"]);
-        }
+        $errorsService->errorsValidation($user);
 
         $manager->persist($user);
         $manager->flush();
 
-        $response = new Response($user);
+        $response = new Response($serializer->serialize($user, "json"));
         $response->headers->set('Content-Type', 'application/json');
 
         return $response;
@@ -153,6 +194,7 @@ class UserController extends AbstractController
 
     /**
      * @Route("/user/delete/{id}", name="delete_user", methods={"DELETE"})
+     * @IsGranted("ROLE_CLIENT")
      * @SWG\Response(
      *     response=204,
      *     description="Supprime un utilisateur",
@@ -162,11 +204,22 @@ class UserController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Requiert le rôle de client ou d'administrateur",
+     *     type="string"
+     * )
+     * @SWG\Tag(name="Utilisateur")
      * @param User $user
      * @return Response
      */
     public function deleteUser(User $user){
+
         $manager = $this->getDoctrine()->getManager();
+
+        $this->denyAccessUnlessGranted("view", $user->getClient());
+
         $manager->remove($user);
         $manager->flush();
 
@@ -184,33 +237,52 @@ class UserController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     description="Champs utilisateur a compléter",
+     *     required=true,
+     *     @SWG\Schema(
+     *         type="array",
+     *         @SWG\Items(
+     *            type="object",
+     *            @SWG\Property(property="name", type="string"),
+     *            @SWG\Property(property="email", type="string"),
+     *            @SWG\Property(property="client", type="integer"),
+     *            @SWG\Property(property="password", type="string")
+     *         )
+     *     )
+     * )
+     * @SWG\Tag(name="Utilisateur")
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Ne peut s'utiliser que sur soi même ou requiert le rôle de client ou d'administrateur",
+     *     type="string"
+     * )
      * @param User $user
      * @param Request $request
-     * @param ValidatorInterface $validator
-     * @param SerializerInterface $serializer
+     * @param JsonToEntityService $jsonToEntityService
+     * @param CheckingErrorsService $errorsService
      * @return Response
      */
-    public function updateUser(User $user, Request $request, ValidatorInterface $validator, SerializerInterface $serializer){
+    public function updateUser(User $user, Request $request, JsonToEntityService $jsonToEntityService, CheckingErrorsService $errorsService, SerializerInterface $serializer){
         $manager = $this->getDoctrine()->getManager();
         $data = json_decode($request->getContent(), true);
 
-        if(isset($data['client'])){
-            $data['client'] = $this->getDoctrine()->getManager()->getRepository(Client::class)->find($data['client']);
+
+        if( isset($data['client']) ){
+            $client = $this->getDoctrine()->getManager()->getRepository(Client::class)->find($data['client']);
+            $data['client'] = $client;
+        }else{
+            $client = $this->getUser()->getClient();
+            $data['client'] = $client;
         }
 
-        foreach ($data as $key => $value){
-            if($key && !empty($value)) {
-                $name = ucfirst($key);
-                $setter = 'set'.$name;
-                $user->$setter($value);
-            }
-        }
+        $this->denyAccessUnlessGranted("view", $client);
 
-        $errors = $validator->validate($user);
-        if(count($errors) > 0){
-            $errorsSerialized = $serializer->serialize($errors, "json");
-            return new Response($errorsSerialized, 400, ["Content-type" => "application/json"]);
-        }
+        $user = $jsonToEntityService->JsonToEntity($user, $data);
+        $errorsService->errorsValidation($user);
 
         $manager->persist($user);
         $manager->flush();

@@ -1,2 +1,0 @@
-# P7-BileMo
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a2b97eed171a4f878359e1fa040711f2)](https://app.codacy.com/manual/kindertheo/P7-BileMo?utm_source=github.com&utm_medium=referral&utm_content=kindertheo/P7-BileMo&utm_campaign=Badge_Grade_Dashboard)

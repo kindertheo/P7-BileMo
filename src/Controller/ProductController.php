@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Product;
+use App\Service\CheckingErrorsService;
+use App\Service\JsonToEntityService;
 use App\Service\PaginationService;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -12,7 +14,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use JMS\Serializer\SerializerInterface;
 use Swagger\Annotations as SWG;
 
@@ -31,6 +32,13 @@ class ProductController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Tag(name="Produit")
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Toutes les personnes authentifiées peuvent consulter le catalogue produit",
+     *     type="string"
+     * )
      * @ParamConverter()
      * @param Product $product
      * @param SerializerInterface $serializer
@@ -57,6 +65,13 @@ class ProductController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Toute les personnes authentifiées peuvent consulter le catalogue produits",
+     *     type="string"
+     * )
+     * @SWG\Tag(name="Produit")
      * @param SerializerInterface $serializer
      * @param PaginationService $paginationService
      * @return Response
@@ -76,6 +91,7 @@ class ProductController extends AbstractController
 
     /**
      * @Route("/product/add", name="add_product", methods={"POST"})
+     * @IsGranted("ROLE_ADMIN")
      * @SWG\Response(
      *     response=201,
      *     description="Ajoute un produit",
@@ -85,25 +101,42 @@ class ProductController extends AbstractController
      *          )
      *      )
      *)
-     *
+     * @SWG\Tag(name="Produit")
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     description="Champs produit à compléter",
+     *     required=true,
+     *     @SWG\Schema(
+     *         type="array",
+     *         @SWG\Items(
+     *            type="object",
+     *            @SWG\Property(property="name", type="string"),
+     *            @SWG\Property(property="prince", type="integer"),
+     *            @SWG\Property(property="description", type="integer"),
+     *         )
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Requiert le rôle d'administrateur",
+     *     type="string"
+     * )
      * @ParamConverter("product")
-     * @IsGranted("ROLE_ADMIN")
      * @param Request $request
      * @param SerializerInterface $serializer
-     * @param ValidatorInterface $validator
+     * @param CheckingErrorsService $errorsService
      * @return Response
      */
-    public function addProduct(Request $request, SerializerInterface $serializer, ValidatorInterface $validator){
+    public function addProduct(Request $request, SerializerInterface $serializer, CheckingErrorsService $errorsService){
         $data = $request->getContent();
         $product = $serializer->deserialize($data, Product::class, 'json');
 
-        $manager = $this->getDoctrine()->getManager();
 
-        $errors = $validator->validate($product);
-        if(count($errors) > 0){
-            $errorsSerialized = $serializer->serialize($errors, "json");
-            return new Response($errorsSerialized, 400, ["Content-type" => "application/json"]);
-        }
+        $errorsService->errorsValidation($product);
+
+        $manager = $this->getDoctrine()->getManager();
 
         $manager->persist($product);
         $manager->flush();
@@ -126,18 +159,23 @@ class ProductController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Tag(name="Produit")
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Requiert le rôle d'administrateur",
+     *     type="string"
+     * )
      * @param Product $product
-     * @param SerializerInterface $serializer
      * @return Response
      */
-    public function deleteProduct(Product $product, SerializerInterface $serializer){
+    public function deleteProduct(Product $product){
         $manager = $this->getDoctrine()->getManager();
 
         $manager->remove($product);
         $manager->flush();
 
         $jsonResponse = new JsonResponse("", 204);
-        //$response = new Response("", 204);
         return $jsonResponse;
     }
 
@@ -153,30 +191,44 @@ class ProductController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Tag(name="Produit")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     description="Champs produit à compléter",
+     *     required=true,
+     *     @SWG\Schema(
+     *         type="array",
+     *         @SWG\Items(
+     *            type="object",
+     *            @SWG\Property(property="name", type="string"),
+     *            @SWG\Property(property="prince", type="integer"),
+     *            @SWG\Property(property="description", type="integer"),
+     *         )
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="header",
+     *     description="Requiert le rôle d'administrateur",
+     *     type="string"
+     * )
      * @param Product $product
      * @param Request $request
      * @param SerializerInterface $serializer
-     * @param ValidatorInterface $validator
+     * @param CheckingErrorsService $errorsService
+     * @param JsonToEntityService $jsonToEntityService
      * @return Response
      */
-    /*TODO METTRE DANS UN SERVICE*/
-    public function updateProduct(Product $product,Request $request, SerializerInterface $serializer, ValidatorInterface $validator){
+    public function updateProduct(Product $product,Request $request, SerializerInterface $serializer, CheckingErrorsService $errorsService, JsonToEntityService $jsonToEntityService){
         $manager = $this->getDoctrine()->getManager();
         $data = json_decode($request->getContent(), true);
 
-        foreach ($data as $key => $value){
-            if($key && !empty($value)) {
-                $name = ucfirst($key);
-                $setter = 'set'.$name;
-                $product->$setter($value);
-            }
-        }
+        $product = $jsonToEntityService->JsonToEntity($product, $data);
 
-        $errors = $validator->validate($product);
-        if(count($errors) > 0){
-            $errorsSerialized = $serializer->serialize($errors, "json");
-            return new Response($errorsSerialized, 400, ["Content-type" => "application/json"]);
-        }
+        $errorsService->errorsValidation($product);
+
 
         $manager->persist($product);
         $manager->flush();
@@ -188,5 +240,4 @@ class ProductController extends AbstractController
         return $response;
     }
 
-    /*TODO ERREUR ENCODAGE, A VERIFIER*/
 }
