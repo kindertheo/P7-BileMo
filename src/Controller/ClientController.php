@@ -50,7 +50,7 @@ class ClientController extends AbstractController
      *     description="Requiert le rôle d'administrateur",
      *     type="string"
      * )
-     * @SWG\Tag(name="Client")
+     * @SWG\Tag(name="Administrateur")
      * @param Request $request
      * @param SerializerInterface $serializer
      * @param CheckingErrorsService $errorsService
@@ -95,7 +95,7 @@ class ClientController extends AbstractController
      *     description="Requiert d'être un utilisateur lié au client",
      *     type="string"
      * )
-     * @SWG\Tag(name="Client")
+     * @SWG\Tag(name="Utilisateur")
      * @param Client $client
      * @param SerializerInterface $serializer
      * @return Response
@@ -122,7 +122,7 @@ class ClientController extends AbstractController
      *          )
      *      )
      *)
-     * @SWG\Tag(name="Client")
+     * @SWG\Tag(name="Administrateur")
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
@@ -185,7 +185,7 @@ class ClientController extends AbstractController
      *     in="header",
      *     description="Requiert le rôle d'administrateur",
      *     type="string"
-     * )     * @SWG\Tag(name="Client")
+     * )     * @SWG\Tag(name="Administrateur")
      * @param Client $client
      * @return Response
      */
@@ -200,5 +200,6 @@ class ClientController extends AbstractController
     }
 
     /*TODO CACHE*/
+    /*TODO DIAGRAM UML*/
 
 }

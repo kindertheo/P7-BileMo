@@ -137,7 +137,7 @@ class UserController extends AbstractController
      *          )
      *      )
      *)
-     * @SWG\Tag(name="Utilisateur")
+     * @SWG\Tag(name="Client")
      *
      * @SWG\Parameter(
      *     name="body",
@@ -210,7 +210,7 @@ class UserController extends AbstractController
      *     description="Requiert le rôle de client ou d'administrateur",
      *     type="string"
      * )
-     * @SWG\Tag(name="Utilisateur")
+     * @SWG\Tag(name="Client")
      * @param User $user
      * @return Response
      */
@@ -253,7 +253,7 @@ class UserController extends AbstractController
      *         )
      *     )
      * )
-     * @SWG\Tag(name="Utilisateur")
+     * @SWG\Tag(name="Client")
      * @SWG\Parameter(
      *     name="role",
      *     in="header",
