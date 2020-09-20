@@ -3,7 +3,54 @@ nelmio_api_doc:
         info:
             title: BileMo
             description: API - Projet 7 - Développeur d'application PHP/Symfony - OpenClassrooms
-            version: 1.0.0
+            version: 1.1.0
+
+        securityDefinitions:
+          bearerAuth:            # arbitrary name for the security scheme
+            type: apiKey
+            scheme: bearer
+            bearerFormat: JWT    # optional, arbitrary value for documentation purposes
+    # 2) Apply the security globally to all operations
+        security:
+          - bearerAuth: []
+
+
+        paths:
+          /api/login:
+            post:
+              tags:
+                - Utilisateur
+              description: Authentification.
+              produces:
+                - application/json
+              parameters:
+                - name: user
+                  description: Adresse email
+                  in: body
+                  required: true
+                  schema:
+                    type: object
+                    properties:
+                      _username:
+                        type: string
+                      _password:
+                        type: string
+              responses:
+                '200':
+                  description: Authentification réussie
+                  schema:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                '401':
+                  description: Identifiants incorrects
+                  schema:
+                    type: object
+                    properties:
+                      error:
+                        type: string
+
     areas: # to filter documented areas
         default:
             path_patterns:

@@ -32,7 +32,7 @@ class ProductController extends AbstractController
      *          )
      *      )
      *)
-     * @SWG\Tag(name="Produit")
+     * @SWG\Tag(name="Utilisateur")
      * @SWG\Parameter(
      *     name="role",
      *     in="header",
@@ -71,7 +71,7 @@ class ProductController extends AbstractController
      *     description="Toute les personnes authentifiées peuvent consulter le catalogue produits",
      *     type="string"
      * )
-     * @SWG\Tag(name="Produit")
+     * @SWG\Tag(name="Utilisateur")
      * @param SerializerInterface $serializer
      * @param PaginationService $paginationService
      * @return Response
@@ -101,7 +101,7 @@ class ProductController extends AbstractController
      *          )
      *      )
      *)
-     * @SWG\Tag(name="Produit")
+     * @SWG\Tag(name="Administrateur")
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
@@ -159,7 +159,7 @@ class ProductController extends AbstractController
      *          )
      *      )
      *)
-     * @SWG\Tag(name="Produit")
+     * @SWG\Tag(name="Administrateur")
      * @SWG\Parameter(
      *     name="role",
      *     in="header",
@@ -191,7 +191,7 @@ class ProductController extends AbstractController
      *          )
      *      )
      *)
-     * @SWG\Tag(name="Produit")
+     * @SWG\Tag(name="Administrateur")
      *
      * @SWG\Parameter(
      *     name="body",
@@ -239,5 +239,8 @@ class ProductController extends AbstractController
 
         return $response;
     }
+
+
+
 
 }

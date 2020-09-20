@@ -5,8 +5,16 @@
 api_login_check:
     path: /login
 
+homepage:
+    path: /
+    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController::urlRedirectAction
+    defaults:
+        path: /doc
+        permanent: true
+
 
 app.swagger_ui:
     path: /doc
     methods: GET
     defaults: { _controller: nelmio_api_doc.controller.swagger_ui }
+
