@@ -14,4 +14,6 @@ class HomeController extends AbstractController
     {
         return $this->redirectToRoute("/doc");
     }
+
+
 }

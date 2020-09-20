@@ -32,7 +32,7 @@ class ProductController extends AbstractController
      *          )
      *      )
      *)
-     * @SWG\Tag(name="Administrateur")
+     * @SWG\Tag(name="Utilisateur")
      * @SWG\Parameter(
      *     name="role",
      *     in="header",
@@ -239,5 +239,8 @@ class ProductController extends AbstractController
 
         return $response;
     }
+
+
+
 
 }

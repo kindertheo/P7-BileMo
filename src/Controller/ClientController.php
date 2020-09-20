@@ -199,7 +199,10 @@ class ClientController extends AbstractController
         return $response;
     }
 
+
     /*TODO CACHE*/
     /*TODO DIAGRAM UML*/
 
+
+    /*TODO DOC - AJOUTER LOGIN - AJOUTER PARAMETRE DANS LISTING PRODUCT -  */
 }

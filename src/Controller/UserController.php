@@ -289,5 +289,4 @@ class UserController extends AbstractController
 
         return new Response($user);
     }
-
 }
