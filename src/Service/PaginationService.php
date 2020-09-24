@@ -66,7 +66,10 @@ class PaginationService extends  AbstractController {
             throw new NotFoundHttpException("Page Not Found");
         }
 
-
-        return $pager->getCurrentPageResults();
+        $return = ["Page" => $currentPage,
+            "Limite" => $limit,
+            "Resultat" => $pager->getCurrentPageResults()];
+        
+        return $return;
     }
 }
