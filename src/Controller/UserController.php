@@ -198,10 +198,6 @@ class UserController extends AbstractController
      * @SWG\Response(
      *     response=204,
      *     description="Supprime un utilisateur",
-     *     @SWG\Schema(
-     *
-     *     @SWG\Items(ref=@Model(type=User::class, groups={"user"})
-     *          )
      *      )
      *)
      * @SWG\Parameter(
