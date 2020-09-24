@@ -153,10 +153,6 @@ class ProductController extends AbstractController
      * @SWG\Response(
      *     response=204,
      *     description="Supprime un produit",
-     *     @SWG\Schema(
-     *
-     *     @SWG\Items(ref=@Model(type=Product::class)
-     *          )
      *      )
      *)
      * @SWG\Tag(name="Administrateur")

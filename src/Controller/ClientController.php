@@ -174,10 +174,6 @@ class ClientController extends AbstractController
      * @SWG\Response(
      *     response=204,
      *     description="Supprime un client",
-     *     @SWG\Schema(
-     *
-     *     @SWG\Items(ref=@Model(type=Client::class, groups={"client"})
-     *          )
      *      )
      *)
      * @SWG\Parameter(
