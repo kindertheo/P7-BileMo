@@ -8,8 +8,9 @@ nelmio_api_doc:
         securityDefinitions:
           bearerAuth:            # arbitrary name for the security scheme
             type: apiKey
-            scheme: bearer
-            bearerFormat: JWT    # optional, arbitrary value for documentation purposes
+            name: "Authorization"
+            description: Add "Bearer" in front of the token
+            in: header
     # 2) Apply the security globally to all operations
         security:
           - bearerAuth: []
@@ -31,9 +32,9 @@ nelmio_api_doc:
                   schema:
                     type: object
                     properties:
-                      _username:
+                      username:
                         type: string
-                      _password:
+                      password:
                         type: string
               responses:
                 '200':
