@@ -36,6 +36,18 @@ class UserController extends AbstractController
      *          )
      *      )
      *)
+     * @SWG\Parameter(
+     *     name="limit",
+     *     in="query",
+     *     description="Limite du nombre de produit par page",
+     *     type="string"
+     * )
+     * @SWG\Parameter(
+     *     name="Page",
+     *     in="query",
+     *     description="Numéro de la page voulu",
+     *     type="string"
+     * )
      * @SWG\Tag(name="Utilisateur")
      * @SWG\Parameter(
      *     name="role",

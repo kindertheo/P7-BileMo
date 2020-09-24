@@ -71,6 +71,18 @@ class ProductController extends AbstractController
      *     description="Toute les personnes authentifiées peuvent consulter le catalogue produits",
      *     type="string"
      * )
+     * @SWG\Parameter(
+     *     name="limit",
+     *     in="query",
+     *     description="Limite du nombre de produit par page",
+     *     type="string"
+     * )
+     * @SWG\Parameter(
+     *     name="Page",
+     *     in="query",
+     *     description="Numéro de la page voulu",
+     *     type="string"
+     * )
      * @SWG\Tag(name="Utilisateur")
      * @param SerializerInterface $serializer
      * @param PaginationService $paginationService

@@ -197,8 +197,4 @@ class ClientController extends AbstractController
 
 
     /*TODO CACHE*/
-    /*TODO DIAGRAM UML*/
-
-
-    /*TODO DOC - AJOUTER LOGIN - AJOUTER PARAMETRE DANS LISTING PRODUCT -  */
 }
