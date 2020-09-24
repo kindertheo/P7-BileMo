@@ -112,7 +112,7 @@ class ProductController extends AbstractController
      *         @SWG\Items(
      *            type="object",
      *            @SWG\Property(property="name", type="string"),
-     *            @SWG\Property(property="prince", type="integer"),
+     *            @SWG\Property(property="price", type="integer"),
      *            @SWG\Property(property="description", type="integer"),
      *         )
      *     )
@@ -199,7 +199,7 @@ class ProductController extends AbstractController
      *         @SWG\Items(
      *            type="object",
      *            @SWG\Property(property="name", type="string"),
-     *            @SWG\Property(property="prince", type="integer"),
+     *            @SWG\Property(property="price", type="integer"),
      *            @SWG\Property(property="description", type="integer"),
      *         )
      *     )
